@@ -1,0 +1,22 @@
+FROM node:20-slim
+
+WORKDIR /Efrontend
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source code
+COPY . .
+
+RUN apt-get update && apt-get install -y curl 
+
+# Expose port
+EXPOSE 5173
+
+# if not using docker compose: map the port to machine's port
+
+# Start development server with explicit host
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]

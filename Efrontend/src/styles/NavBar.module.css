@@ -1,0 +1,90 @@
+/* NavBar.module.css */
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #111827; /* dark navy */
+  padding: 0.75rem 1.5rem;
+  color: white;
+  z-index: 1000;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Logo */
+.logo_link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.logoImage {
+  height: 40px;
+  width: auto;
+}
+
+/* Nav items */
+.navList {
+  display: flex;
+  gap: 2rem; /* wider spacing */
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navItem {
+  position: relative;
+  cursor: pointer;
+  transition: color 0.2s ease, border-bottom 0.2s ease;
+}
+
+.navItem a {
+  text-decoration: none;
+  color: inherit;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.25rem 0;
+}
+
+/* Hover + Active underline animation */
+.navItem::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -4px;
+  width: 0%;
+  height: 2px;
+  background-color: #3b82f6; /* tailwind blue-500 */
+  transition: width 0.3s ease;
+}
+
+.navItem:hover {
+  color: #3b82f6;
+}
+
+.navItem:hover::after {
+  width: 100%;
+}
+
+.active {
+  color: #3b82f6;
+  font-weight: 600;
+}
+
+.active::after {
+  width: 100%;
+}
+
+/* Auth buttons */
+.auth-buttons {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}

@@ -1,0 +1,28 @@
+#python
+.venv/
+__pycache__/
+*.pyc 
+
+# Node.js
+node_modules/
+npm-debug.log*
+
+#environments
+.env
+.env.local
+env/
+converter/wsl_venv/
+Backend\venv/
+
+
+#IDE
+.vscode
+.idea/
+
+#OS 
+.DS_Store
+Thumbs.db
+
+# Other frontends
+frontendCRA/
+Documentation/

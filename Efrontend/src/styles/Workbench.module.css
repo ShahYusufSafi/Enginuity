@@ -1,0 +1,8 @@
+.workbenchContainer {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;           /* h-screen */
+    width: 100vw;            /* w-screen */
+    background-color: #f9fafb; /* bg-gray-50 */
+    margin-top: 4rem;        /* mt-16 (16 * 0.25rem = 4rem) */
+}

@@ -1,0 +1,27 @@
+.logo {
+  color: #22c55e; /* tailwind's green-500 */
+  filter: drop-shadow(0 0 2px #701ba8)
+          drop-shadow(0 0 2px #701ba8)
+          drop-shadow(0 0 2px #701ba8);
+  transition: all 0.3s ease-in-out;
+}
+
+.logo:hover {
+  filter: drop-shadow(0 0 1px #22c55e)
+          drop-shadow(0 0 1px #22c55e)
+          drop-shadow(0 0 1px #22c55e);
+}
+
+
+.Icon {
+  width: 100%;
+  height: 100%;
+  color: white;
+
+}
+
+.Icon:hover {
+  color: black; /* Change color on hover */  
+  transform: scale(1.2); /* Slightly enlarge the icon on hover */
+  transition: transform 0.5s ease-in-out, color 0.5s ease-in-out; /* Smooth transition for transform and color */
+}

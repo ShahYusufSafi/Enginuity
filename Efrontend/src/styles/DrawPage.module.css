@@ -1,0 +1,9 @@
+.navigation {
+  background-color: #333;
+  overflow: hidden;
+}
+
+.canvasContainer {
+  padding: 20px;
+  top: 60px; /* Adjust based on navbar height */
+}

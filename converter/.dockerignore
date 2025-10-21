@@ -1,0 +1,14 @@
+# .dockerignore
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+env/
+venv/
+wsl_venv/
+*.db
+*.log
+.git/
+.SVGs/
+ODAFileConverter
+

@@ -1,0 +1,27 @@
+FROM ubuntu:22.04
+
+WORKDIR /converter
+
+# Install FUSE (required by AppImage to mount itself)
+RUN apt-get update && apt-get install -y \
+    python3 \
+    python3-pip \
+    fuse3 \
+    curl \
+    libfuse2 \
+    xvfb\
+    && rm -rf /var/lib/apt/lists/*
+
+
+# Copy Python code and requirements
+COPY reqs.txt .
+RUN pip3 install -r reqs.txt
+COPY . .
+
+
+# Expose port and run FastAPI app
+EXPOSE 8001
+
+# for my converter I need a virual window for GUI to run (xvfb-run)
+#CMD ["xvfb","run","uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
+CMD bash -c "chmod +x /converter/ODAFileConverter.AppImage && xvfb-run -a uvicorn main:app --host 0.0.0.0 --port 8001"
