@@ -38,7 +38,7 @@ Upload your CAD file, visualize it, and run solvers directly in the browser.
 
 ### 2️ Clone the Repository
 ```bash
-git clone https://github.com/Shahyusufsafi/EnginuityMs.git
+git clone https://github.com/Shahyusufsafi/Enginuity.git
 cd enginuity
 ```
 3️ Build and Run
