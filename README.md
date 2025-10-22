@@ -54,6 +54,39 @@ You can now visit:
  → http://localhost:5173 # or follow the link provided, for the frontend 
 
 
+Usage Guide
+1. Convert a DWG File to SVG
+
+Open the Dashboard (accessible via the user menu or navigation bar).
+
+Click Create New.
+
+Upload a DWG file (e.g., sample.dwg).
+
+The backend automatically converts it — the resulting SVG file appears on the new page and is stored under /SVGs/sample.svg.
+
+The frontend then renders the SVG automatically.
+
+2. Run the FEM Solver Demo
+
+Navigate to FEM Simulation from the navigation bar.
+
+Adjust the simulation parameters — the current version supports 1D systems, with 2D simulations coming in future updates.
+
+The solver demonstrates the project’s computational core, which integrates FEM-based PDE solvers with drawing and visualization modules.
+
+The internal production rate of the system currently follows a sine function for demonstration purposes.
+
+3. Drawer Page
+
+Go to Draw from the navigation bar.
+
+You can draw points, connect them, and measure distances between them.
+
+Future updates will enable direct integration with DWG files, allowing in-browser editing and CAD-level modifications.
+
+---
+
 Future Directions
 
  Implement higher-dimensional FEM solvers.
@@ -65,6 +98,7 @@ Future Directions
  Deploy to the cloud (AWS / Render / Railway).
 
  Add persistent storage for user projects.
+ ---
 
  About the Author
 
