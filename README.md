@@ -68,9 +68,11 @@ Future Directions
 
  About the Author
 
-Shah Yusuf Safi
+Shah Yusuf Safi,
 MSc. Computational Science — Building the bridge between engineering, computation, and simulation.
+
 📧 [yusufsafi277@gmail.com]
+
 🔗 LinkedIn Profile: http://linkedin.com/in/shah-yusuf-safi-6444472b7
 
 License
