@@ -4,11 +4,11 @@ import P1D from "./pages/p1d";
 import DrawPage from "./pages/DrawPage";
 import HomePage from "./pages/HomePage";
 import SignInPage from "./Layouts/SignIn";
-
 import MainLayout from "./Layouts/MainLayout";
 import { RedirectToSignIn, SignedIn, SignedOut } from "@clerk/clerk-react";
 import Dashboard from "./pages/Dashboard";
 import Workbench from "./pages/Workbench";
+import DrawingPage from "./pages/DrawingPage"
 
 export default function AppRoutes() {
   return (
@@ -39,6 +39,13 @@ export default function AppRoutes() {
       <Route path = "/simulate" element = {
         <SignedIn>
           <P1D/>
+        </SignedIn>
+        } />
+
+
+      <Route path = "/DrawPage" element = {
+        <SignedIn>
+          <DrawingPage/>
         </SignedIn>
         } />
 

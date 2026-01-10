@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Web CAD System - Complete</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden; 
+            background: #1e1e1e;
+        }
+        
+        #cad-container { 
+            width: 100vw; 
+            height: 100vh; 
+        }
+        
+        #toolbar {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            background: rgba(40, 44, 52, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            z-index: 100;
+            border: 1px solid #444;
+        }
+        
+        .tool-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #444;
+        }
+        
+        .tool-group:last-child {
+            border-bottom: none;
+        }
+        
+        .tool-group label {
+            color: #abb2bf;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+        
+        .tool-btn {
+            padding: 8px 12px;
+            border: 1px solid #444;
+            background: #282c34;
+            color: #abb2bf;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        
+        .tool-btn:hover {
+            background: #2c313a;
+            border-color: #555;
+        }
+        
+        .tool-btn.active {
+            background: #007acc;
+            color: white;
+            border-color: #007acc;
+        }
+        
+        .status-bar {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            padding: 10px 15px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            border-radius: 4px;
+            min-width: 300px;
+            border-left: 3px solid #0f0;
+            z-index: 100;
+        }
+        
+        .status-item {
+            margin: 2px 0;
+        }
+        
+        .units-display {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        #command-history {
+            position: fixed;
+            bottom: 100px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: #0f0;
+            padding: 10px;
+            border-radius: 4px;
+            max-width: 300px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 11px;
+            display: none;
+        }
+        
+        .grid-controls {
+            position: fixed;
+            top: 150px;
+            left: 10px;
+            background: rgba(40, 44, 52, 0.95);
+            padding: 12px;
+            border-radius: 8px;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .grid-controls label {
+            display: block;
+            margin: 5px 0;
+        }
+    </style>
+</head>
+<body>
+    <!-- Main Toolbar -->
+    <div id="toolbar">
+        <div class="tool-group">
+            <label>Selection</label>
+            <button class="tool-btn active" data-tool="select">Select</button>
+        </div>
+        
+        <div class="tool-group">
+            <label>Drawing</label>
+            <button class="tool-btn" data-tool="line">Line</button>
+            <button class="tool-btn" data-tool="circle">Circle</button>
+            <button class="tool-btn" data-tool="rectangle">Rectangle</button>
+            <button class="tool-btn" data-tool="point">Point</button>
+            <button class="tool-btn" data-tool="polyline">Polyline</button>
+        </div>
+        
+        <div class="tool-group">
+            <label>Editing</label>
+            <button class="tool-btn" data-tool="move">Move</button>
+            <button class="tool-btn" data-tool="rotate">Rotate</button>
+            <button class="tool-btn" data-tool="scale">Scale</button>
+            <button class="tool-btn" data-tool="trim">Trim</button>
+            <button class="tool-btn" data-tool="extend">Extend</button>
+        </div>
+        
+        <div class="tool-group">
+            <label>Annotation</label>
+            <button class="tool-btn" data-tool="dimension">Dimension</button>
+            <button class="tool-btn" data-tool="text">Text</button>
+            <button class="tool-btn" data-tool="measure">Measure</button>
+        </div>
+        
+        <div class="tool-group">
+            <label>Properties</label>
+            <input type="color" id="color-picker" value="#007acc" style="width: 100%;">
+            <select id="line-width" style="width: 100%; margin-top: 5px; padding: 4px;">
+                <option value="1">Thin (1px)</option>
+                <option value="2">Normal (2px)</option>
+                <option value="3">Thick (3px)</option>
+                <option value="5">Extra Thick (5px)</option>
+            </select>
+        </div>
+    </div>
+    
+    <!-- Grid Controls -->
+    <div class="grid-controls">
+        <h4 style="margin-top: 0; margin-bottom: 8px;">Grid Controls</h4>
+        <label>
+            <input type="checkbox" id="grid-toggle" checked> Show Grid
+        </label>
+        <label>
+            <input type="checkbox" id="snap-toggle" checked> Snap to Grid
+        </label>
+        <label>
+            Grid Size: 
+            <select id="grid-size">
+                <option value="1">1 mm</option>
+                <option value="5">5 mm</option>
+                <option value="10" selected>10 mm</option>
+                <option value="25">25 mm</option>
+                <option value="50">50 mm</option>
+                <option value="100">100 mm</option>
+            </select>
+        </label>
+    </div>
+    
+    <!-- Units Display -->
+    <div class="units-display">
+        Units: <select id="unit-select" style="background: #333; color: white; border: none;">
+            <option value="mm">Millimeters</option>
+            <option value="cm">Centimeters</option>
+            <option value="m">Meters</option>
+            <option value="inches">Inches</option>
+        </select>
+    </div>
+    
+    <!-- Status Bar -->
+    <div class="status-bar" id="status-bar">
+        <div class="status-item">X: 0.00 Y: 0.00 Z: 0.00</div>
+        <div class="status-item">Mode: Absolute</div>
+        <div class="status-item">Snap: ON</div>
+        <div class="status-item">Grid: 10 mm</div>
+    </div>
+    
+    <!-- Command History (toggle with F2) -->
+    <div id="command-history">
+        <div>Command History:</div>
+    </div>
+    
+    <!-- Main CAD Container -->
+    <div id="cad-container"></div>
+    
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    
+    <!-- Our CAD System -->
+    <script src="CrdSys.js"></script>
+    <script src="GridMng.js"></script>
+    <script src="selectionManager.js"></script>
+    <script src="DrawEngine.js"></script>
+    <script src="Tools.js"></script>
+    
+    <!-- Main Application Script -->
+    <script>
+        // Wait for DOM to load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize CAD Engine
+            const cadEngine = new DrawingEngine('cad-container');
+            
+            // Initialize tools
+            const drawingTools = new DrawingTools(cadEngine);
+            cadEngine.drawingTools = drawingTools;
+            
+            // Initialize Coordinate Display (simplified)
+            class CoordinateDisplay {
+                constructor(engine) {
+                    this.engine = engine;
+                    this.statusBar = document.getElementById('status-bar');
+                }
+                
+                updatePosition(worldPos) {
+                    const snapped = engine.gridManager.getSnappedPoint(worldPos);
+                    const statusHtml = `
+                        <div class="status-item">Cursor: ${worldPos.x.toFixed(2)}, ${worldPos.y.toFixed(2)}</div>
+                        <div class="status-item">Snapped: ${snapped.x}, ${snapped.y}</div>
+                        <div class="status-item">Mode: ${engine.coordinateSystem.currentMode}</div>
+                        <div class="status-item">Snap: ${engine.snapEnabled ? 'ON' : 'OFF'}</div>
+                        <div class="status-item">Grid: ${engine.gridManager.gridSize} ${engine.coordinateSystem.units}</div>
+                    `;
+                    this.statusBar.innerHTML = statusHtml;
+                }
+            }
+            
+            const coordDisplay = new CoordinateDisplay(cadEngine);
+            cadEngine.coordinateDisplay = coordDisplay;
+            
+            // Setup toolbar interactions
+            document.querySelectorAll('.tool-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+                    e.target.classList.add('active');
+                    drawingTools.activeTool = e.target.dataset.tool;
+                    
+                    // Update command line placeholder based on tool
+                    const cmdInput = document.getElementById('cad-command-line');
+                    if (cmdInput) {
+                        const placeholders = {
+                            'line': 'Enter start point or "@dx,dy" for relative...',
+                            'circle': 'Enter center point...',
+                            'rectangle': 'Enter first corner...',
+                            'point': 'Enter point coordinates...',
+                            'measure': 'Enter first measurement point...'
+                        };
+                        cmdInput.placeholder = placeholders[e.target.dataset.tool] || 'Enter command or coordinates...';
+                    }
+                });
+            });
+            
+            // Grid controls
+            document.getElementById('grid-toggle').addEventListener('change', (e) => {
+                cadEngine.gridManager.setVisibility(e.target.checked);
+            });
+            
+            document.getElementById('snap-toggle').addEventListener('change', (e) => {
+                cadEngine.snapEnabled = e.target.checked;
+            });
+            
+            document.getElementById('grid-size').addEventListener('change', (e) => {
+                cadEngine.gridManager.setGridSize(parseInt(e.target.value));
+            });
+            
+            // Units selection
+            document.getElementById('unit-select').addEventListener('change', (e) => {
+                cadEngine.coordinateSystem.setUnits(e.target.value);
+            });
+            
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                // Toggle command history with F2
+                if (e.key === 'F2') {
+                    const history = document.getElementById('command-history');
+                    history.style.display = history.style.display === 'block' ? 'none' : 'block';
+                }
+                
+                // Escape to cancel current operation
+                if (e.key === 'Escape') {
+                    drawingTools.isDrawing = false;
+                    drawingTools.currentEntity = null;
+                    if (drawingTools.previewObject) {
+                        cadEngine.scene.remove(drawingTools.previewObject);
+                        drawingTools.previewObject = null;
+                    }
+                }
+                
+                // Delete selected entities
+                if (e.key === 'Delete' || e.key === 'Del') {
+                    const selected = cadEngine.selectionManager.getSelectedEntities();
+                    selected.forEach(entity => {
+                        cadEngine.removeEntity(entity);
+                    });
+                    cadEngine.selectionManager.deselectAll();
+                }
+                
+                // Toggle snap with Ctrl+S
+                if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    cadEngine.snapEnabled = !cadEngine.snapEnabled;
+                    document.getElementById('snap-toggle').checked = cadEngine.snapEnabled;
+                }
+                
+                // Toggle grid with Ctrl+G
+                if (e.ctrlKey && e.key === 'g') {
+                    e.preventDefault();
+                    const gridToggle = document.getElementById('grid-toggle');
+                    gridToggle.checked = !gridToggle.checked;
+                    cadEngine.gridManager.setVisibility(gridToggle.checked);
+                }
+                
+                // Clear all with Ctrl+Shift+C
+                if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                    e.preventDefault();
+                    if (confirm('Clear all drawings?')) {
+                        cadEngine.clearAll();
+                    }
+                }
+                
+                // Export image with Ctrl+E
+                if (e.ctrlKey && e.key === 'e') {
+                    e.preventDefault();
+                    cadEngine.exportImage();
+                }
+            });
+            
+            // Welcome message
+            console.log('Web CAD System initialized!');
+            console.log('Shortcuts:');
+            console.log('  S - Toggle snap to grid');
+            console.log('  G - Toggle grid visibility');
+            console.log('  Delete - Delete selected entities');
+            console.log('  ESC - Cancel current operation');
+            console.log('  Arrow keys - Pan view');
+            console.log('  Mouse wheel - Zoom in/out');
+            console.log('  Double click - Add point marker');
+            
+            // Auto-focus command line
+            setTimeout(() => {
+                const cmdInput = document.getElementById('cad-command-line');
+                if (cmdInput) {
+                    cmdInput.focus();
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

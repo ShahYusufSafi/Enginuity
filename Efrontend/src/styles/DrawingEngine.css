@@ -1,0 +1,131 @@
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    overflow: hidden; 
+    background: #1e1e1e;
+}
+
+#cad-container { 
+    width: 100vw; 
+    height: 100vh; 
+}
+
+#toolbar {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    background: rgba(40, 44, 52, 0.95);
+    padding: 12px;
+    border-radius: 8px;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 100;
+    border: 1px solid #444;
+}
+
+.tool-group {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #444;
+}
+
+.tool-group:last-child {
+    border-bottom: none;
+}
+
+.tool-group label {
+    color: #abb2bf;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 3px;
+}
+
+.tool-btn {
+    padding: 8px 12px;
+    border: 1px solid #444;
+    background: #282c34;
+    color: #abb2bf;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 12px;
+    transition: all 0.2s;
+    text-align: left;
+}
+
+.tool-btn:hover {
+    background: #2c313a;
+    border-color: #555;
+}
+
+.tool-btn.active {
+    background: #007acc;
+    color: white;
+    border-color: #007acc;
+}
+
+.status-bar {
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #0f0;
+    padding: 10px 15px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    border-radius: 4px;
+    min-width: 300px;
+    border-left: 3px solid #0f0;
+    z-index: 100;
+}
+
+.status-item {
+    margin: 2px 0;
+}
+
+.units-display {
+    position: fixed;
+    top: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+#command-history {
+    position: fixed;
+    bottom: 100px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.8);
+    color: #0f0;
+    padding: 10px;
+    border-radius: 4px;
+    max-width: 300px;
+    max-height: 200px;
+    overflow-y: auto;
+    font-family: monospace;
+    font-size: 11px;
+    display: none;
+}
+
+.grid-controls {
+    position: fixed;
+    top: 150px;
+    right: 10px;
+    background: rgba(40, 44, 52, 0.95);
+    padding: 12px;
+    border-radius: 8px;
+    color: white;
+    font-size: 12px;
+}
+
+.grid-controls label {
+    display: block;
+    margin: 5px 0;
+}

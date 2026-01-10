@@ -15,6 +15,14 @@ export const tool:Record<string, ToolType> = {
         action: () => {
             window.location.href = '/draw';
         }
+    },
+
+    Draw: {
+        name: 'Draw',
+        id: 'Dr',    
+        action: () => {
+            window.location.href = '/DrawPage';
+        }
     }
 }
 

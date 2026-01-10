@@ -14,15 +14,15 @@ env/
 converter/wsl_venv/
 Backend\venv/
 
-
 #IDE
 .vscode
 .idea/
 
-#OS 
+#OS
 .DS_Store
 Thumbs.db
 
 # Other frontends
 frontendCRA/
 Documentation/
+Efrontend/src/DrawingEngine/docs.md
