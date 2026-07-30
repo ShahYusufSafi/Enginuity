@@ -2,13 +2,12 @@
 import React from 'react';
 import styles from './SimButton.module.css';
 
+/** Submit button for the solver form. Colour comes from SimButton.module.css. */
 interface SimButtonProps {
-  
   type?: 'button' | 'submit' | 'reset';
-  onClick?: () => void| Promise<void>;
+  onClick?: () => void | Promise<void>;
   disabled?: boolean;
   loading?: boolean;
-  color?: string;
   children: React.ReactNode;
 }
 
@@ -20,15 +19,13 @@ export default function SimButton({
   children,
 }: SimButtonProps) {
   return (
-
-      <button
+    <button
       type={type}
       className={styles.button}
       disabled={loading || disabled}
       onClick={onClick}
-      >
-      {loading ? 'Loading...' : children}
+    >
+      {loading ? 'Loading…' : children}
     </button>
-
   );
 }

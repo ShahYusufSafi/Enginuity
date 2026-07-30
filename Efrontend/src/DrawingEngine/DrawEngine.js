@@ -48,13 +48,23 @@ export default class DrawingEngine {
         this.currentMousePosition = new THREE.Vector3();
         this.isDragging = false;
         this.dragStart = new THREE.Vector3();
-        
+
+        // Pan state (middle-mouse drag)
+        this.isPanning   = false;
+        this.panLastX    = 0;
+        this.panLastY    = 0;
+
+        // Keep bound references so we can remove them in dispose()
+        this._onResize   = () => this.onWindowResize();
+        this._onKeyDown  = (e) => this.onKeyDown(e);
+        this._onKeyUp    = (e) => this.onKeyUp(e);
+
         // Initialize
         this.setupEventListeners();
         this.animate();
-        
+
         // Handle window resize
-        window.addEventListener('resize', () => this.onWindowResize());
+        window.addEventListener('resize', this._onResize);
     }
     
     setupEventListeners() {
@@ -66,9 +76,12 @@ export default class DrawingEngine {
         canvas.addEventListener('wheel', (e) => this.onMouseWheel(e));
         canvas.addEventListener('dblclick', (e) => this.onDoubleClick(e));
         
+        // Prevent context menu on right-click (we use right-click for pan)
+        canvas.addEventListener('contextmenu', (e) => e.preventDefault());
+
         // Keyboard events
-        document.addEventListener('keydown', (e) => this.onKeyDown(e));
-        document.addEventListener('keyup', (e) => this.onKeyUp(e));
+        document.addEventListener('keydown', this._onKeyDown);
+        document.addEventListener('keyup',   this._onKeyUp);
     }
     
     screenToWorld(screenX, screenY) {
@@ -103,36 +116,66 @@ export default class DrawingEngine {
     }
     
     onMouseDown(e) {
+        // Middle mouse (button 1) or right mouse (button 2) → start pan
+        if (e.button === 1 || e.button === 2) {
+            this.isPanning = true;
+            this.panLastX  = e.clientX;
+            this.panLastY  = e.clientY;
+            this.renderer.domElement.style.cursor = 'grabbing';
+            return;
+        }
+
         const worldPos = this.getSnappedPosition(e.clientX, e.clientY);
         this.currentMousePosition.copy(worldPos);
         this.dragStart.copy(worldPos);
         this.isDragging = true;
-        
+
         // Pass to active tool
         if (this.drawingTools) {
             this.drawingTools.onMouseDown(e, worldPos);
         }
     }
-    
+
     onMouseMove(e) {
+        // Pan: move camera in world space
+        if (this.isPanning) {
+            const dx = e.clientX - this.panLastX;
+            const dy = e.clientY - this.panLastY;
+            this.panLastX = e.clientX;
+            this.panLastY = e.clientY;
+
+            // Convert screen delta → world delta (account for zoom)
+            const frustumW = (this.camera.right - this.camera.left) / this.camera.zoom;
+            const frustumH = (this.camera.top   - this.camera.bottom) / this.camera.zoom;
+            this.camera.position.x -= (dx / window.innerWidth)  * frustumW;
+            this.camera.position.y += (dy / window.innerHeight) * frustumH;
+            return;
+        }
+
         const worldPos = this.getSnappedPosition(e.clientX, e.clientY);
         this.currentMousePosition.copy(worldPos);
-        
+
         // Update coordinate display
         if (this.coordinateDisplay) {
             this.coordinateDisplay.updatePosition(worldPos);
         }
-        
+
         // Pass to active tool
         if (this.drawingTools) {
             this.drawingTools.onMouseMove(e, worldPos);
         }
     }
-    
+
     onMouseUp(e) {
+        if (e.button === 1 || e.button === 2) {
+            this.isPanning = false;
+            this.renderer.domElement.style.cursor = 'crosshair';
+            return;
+        }
+
         const worldPos = this.getSnappedPosition(e.clientX, e.clientY);
         this.isDragging = false;
-        
+
         // Pass to active tool
         if (this.drawingTools) {
             this.drawingTools.onMouseUp(e, worldPos);
@@ -178,10 +221,20 @@ export default class DrawingEngine {
             this.snapEnabled = !this.snapEnabled;
             console.log(`Snap to grid: ${this.snapEnabled ? 'ON' : 'OFF'}`);
         }
-        
+
         // Toggle grid with G key
         if (e.key === 'g' || e.key === 'G') {
             this.gridManager.setVisibility(!this.gridManager.isVisible);
+        }
+
+        // Fit all geometry into view with F key
+        if (e.key === 'f' || e.key === 'F') {
+            this.fitAll();
+        }
+
+        // Escape: cancel current drawing operation
+        if (e.key === 'Escape') {
+            this.drawingTools?.cancelCurrentOperation?.();
         }
         
         // Pan with arrow keys
@@ -269,10 +322,42 @@ export default class DrawingEngine {
     }
     
     animate() {
+        if (this._disposed) return;
         requestAnimationFrame(() => this.animate());
         this.renderer.render(this.scene, this.camera);
     }
     
+    // ── Fit camera so that a region of the given size fills ~85 % of the view ──
+    fitToView(size) {
+        if (!size || size.x === 0 || size.y === 0) return;
+
+        const frustumW = this.camera.right  - this.camera.left;
+        const frustumH = this.camera.top    - this.camera.bottom;
+
+        const zoomX = frustumW / (size.x * 1.15);
+        const zoomY = frustumH / (size.y * 1.15);
+
+        this.camera.zoom = Math.min(zoomX, zoomY);
+        this.camera.position.x = 0;
+        this.camera.position.y = 0;
+        this.camera.updateProjectionMatrix();
+    }
+
+    // ── Fit camera to all entities currently in the scene ───────────────────
+    fitAll() {
+        if (this.entities.length === 0) return;
+
+        const box = new THREE.Box3();
+        this.entities.forEach(e => box.expandByObject(e.object));
+
+        const center = box.getCenter(new THREE.Vector3());
+        const size   = box.getSize(new THREE.Vector3());
+
+        this.camera.position.x = center.x;
+        this.camera.position.y = center.y;
+        this.fitToView(size);
+    }
+
     // Export current view as image
     exportImage() {
         const dataURL = this.renderer.domElement.toDataURL('image/png');
@@ -280,5 +365,24 @@ export default class DrawingEngine {
         link.href = dataURL;
         link.download = 'cad-drawing.png';
         link.click();
+    }
+
+    // ── Clean up all Three.js resources and DOM elements ────────────────────
+    dispose() {
+        this._disposed = true;
+
+        // Remove event listeners
+        window.removeEventListener('resize',  this._onResize);
+        document.removeEventListener('keydown', this._onKeyDown);
+        document.removeEventListener('keyup',   this._onKeyUp);
+
+        // Dispose entities
+        this.clearAll();
+
+        // Dispose renderer
+        this.renderer.dispose();
+        if (this.container && this.renderer.domElement.parentNode === this.container) {
+            this.container.removeChild(this.renderer.domElement);
+        }
     }
 }

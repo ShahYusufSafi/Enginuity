@@ -1,3 +1,9 @@
+/**
+ * @deprecated Unused. `hooks/ThemeProvider.tsx` is the theme context the app
+ * mounts and that `mode-toggle.tsx` consumes. This is a second, parallel
+ * implementation whose only importer is the equally-unused `ThemeSwitcher`.
+ * Delete both together.
+ */
 import React, { useState, createContext , useEffect, useContext} from "react";
 
 type Theme = "dark" | "light" | "system"

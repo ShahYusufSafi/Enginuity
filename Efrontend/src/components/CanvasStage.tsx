@@ -1,4 +1,8 @@
 // src/components/CanvasStage.tsx
+/**
+ * @deprecated Konva rendering stack (/draw). Frozen — see pages/DrawPage.tsx.
+ * The canonical rendering stack is plain SVG (components/ModelViewer).
+ */
 import { useRef } from 'react';
 import { Stage, Layer } from 'react-konva';
 import DrawLayer from './DrawLayer';

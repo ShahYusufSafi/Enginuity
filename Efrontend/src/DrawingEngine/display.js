@@ -1,4 +1,10 @@
 // CoordinateDisplay.js
+/**
+ * @deprecated Unused. `hooks/CoordinateDisplay.ts` is the version DrawingPage
+ * instantiates; this one builds its own floating <div> instead of writing into
+ * the page's #status-bar, so the two would fight if both were mounted.
+ * Delete with the rest of the three.js prototype.
+ */
 class CoordinateDisplay {
     constructor(engine) {
         this.engine = engine;

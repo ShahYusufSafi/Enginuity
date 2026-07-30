@@ -1,4 +1,6 @@
 // src/core/SelectionManager.js
+import * as THREE from 'three';
+
 class SelectionManager {
     constructor() {
         this.selectedEntities = [];

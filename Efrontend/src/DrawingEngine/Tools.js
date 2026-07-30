@@ -1,4 +1,6 @@
 // src/tools/DrawingTools.js - Complete version
+import * as THREE from 'three';
+
 export default class DrawingTools {
     constructor(engine) {
         this.engine = engine;
@@ -320,10 +322,30 @@ export default class DrawingTools {
     handleSelect(e, worldPos) {
         // Simple selection: just log for now
         console.log('Select at:', worldPos.x.toFixed(2), worldPos.y.toFixed(2));
-        
+
         // In a real implementation, you would:
         // 1. Raycast to find objects at this position
         // 2. Select/deselect entities
         // 3. Update selection highlights
+    }
+
+    // Cancel any in-progress drawing operation
+    cancelCurrentOperation() {
+        if (this.previewObject) {
+            this.engine.scene.remove(this.previewObject);
+            this.previewObject.geometry?.dispose();
+            this.previewObject.material?.dispose();
+            this.previewObject = null;
+        }
+        this.isDrawing     = false;
+        this.startPoint    = null;
+        this.currentEntity = null;
+    }
+
+    // Switch the active tool — called by React toolbar buttons
+    setActiveTool(tool) {
+        if (this.isDrawing) this.cancelCurrentOperation();
+        this.activeTool = tool;
+        console.log('[Tools] Active tool: ' + tool);
     }
 }

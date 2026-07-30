@@ -1,3 +1,9 @@
+/**
+ * @deprecated Duplicate of `mode-toggle.tsx` (hyphen), which is the one the
+ * navbars import. Don't import this one — two files exporting the same
+ * `ModeToggle` is how a theme fix lands in the copy nobody renders.
+ */
+
 import { Moon, Sun } from "lucide-react"
 
 import { Button } from "@/components/ui/button"

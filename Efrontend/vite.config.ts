@@ -19,7 +19,13 @@ export default defineConfig({
   // so static is now attached to it's parent address
   server: {
   proxy:{
-    '/upload-dwg-to-svg': {  
+    '/upload-dwg-to-svg': {
+      target: 'http://converter:8001',
+      changeOrigin: true,
+      secure: false,
+    },
+    // Edge conversion only: DWG -> DXF (ODA stays inside the converter container)
+    '/upload-dwg-to-dxf': {
       target: 'http://converter:8001',
       changeOrigin: true,
       secure: false,
@@ -29,8 +35,9 @@ export default defineConfig({
       changeOrigin: true,
       secure: false,
     },
+    // Canonical API (import, simulate, schema) lives on the backend service
     '/api': {
-      target: 'http://converter:8001',
+      target: 'http://backend:8000',
       changeOrigin: true,
       secure: false,
     }

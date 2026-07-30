@@ -1,10 +1,12 @@
-// 1. Import React (optional in React 17+ with JSX transform)
-import { useState } from 'react';
-import './App.css'; // Optional CSS
+/**
+ * @deprecated Vite starter boilerplate. Unrouted; delete with `App.css`.
+ */
 
-// 2. Define the component (TypeScript type safety)
+import { useState } from 'react';
+import './App.css';
+
 function App() {
-  const [count, setCount] = useState<number>(0); // Type annotation for state
+  const [count, setCount] = useState<number>(0);
 
   return (
     <div className="App">
@@ -18,5 +20,4 @@ function App() {
   );
 }
 
-// 3. Export the component
 export default App;

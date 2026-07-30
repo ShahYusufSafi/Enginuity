@@ -1,3 +1,9 @@
+/**
+ * @deprecated Renders backend-generated SVG markup by injecting it into the
+ * DOM (the legacy DWG→SVG flow). Superseded by components/ModelViewer, which
+ * renders the canonical model — entities you can select, layer, measure and
+ * trace back to a DXF handle. Only pages/Workbench still uses this.
+ */
 import React, { useEffect, useRef } from "react";
 
 interface SvgLoaderProps {

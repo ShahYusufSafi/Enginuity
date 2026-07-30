@@ -1,6 +1,19 @@
+import { useNavigate } from "react-router-dom";
 import styles from "../styles/HomePage.module.css";
 
+/**
+ * Landing page. Signed-in only, see AppRoutes.
+ *
+ * TODO (copy): the bottom CTA says "Sign Up Free" on a page only signed-in
+ * users can reach, and the "Fluid Dynamics" / "Thermal Studies" cards promise
+ * physics that isn't implemented.
+ */
 export default function HomePage() {
+  const navigate = useNavigate();
+
+  const scrollToWorkflow = () =>
+    document.getElementById("how-it-works")?.scrollIntoView({ behavior: "smooth" });
+
   return (
     <div className={styles.homepage}>
       {/* Hero Section */}
@@ -8,12 +21,24 @@ export default function HomePage() {
         <div className={styles.heroContent}>
           <h1>Next-Gen Engineering Simulation</h1>
           <p>
-            Run high-fidelity simulations directly in your browser. 
+            Run high-fidelity simulations directly in your browser.
             No installations, no limits — just results.
           </p>
           <div className={styles.heroActions}>
-            <button className={styles.primaryBtn}>Start Simulating</button>
-            <button className={styles.secondaryBtn}>Learn More</button>
+            <button
+              type="button"
+              className={styles.primaryBtn}
+              onClick={() => navigate("/simulate")}
+            >
+              Start Simulating
+            </button>
+            <button
+              type="button"
+              className={styles.secondaryBtn}
+              onClick={scrollToWorkflow}
+            >
+              Learn More
+            </button>
           </div>
         </div>
         <div className={styles.heroImage}>
@@ -42,7 +67,7 @@ export default function HomePage() {
       </section>
 
       {/* Workflow Section */}
-      <section className={styles.workflow}>
+      <section className={styles.workflow} id="how-it-works">
         <h2>How It Works</h2>
         <div className={styles.steps}>
           <div className={styles.step}>
@@ -67,7 +92,13 @@ export default function HomePage() {
       {/* Call to Action */}
       <section className={styles.cta}>
         <h2>Ready to get started?</h2>
-        <button className={styles.primaryBtn}>Sign Up Free</button>
+        <button
+          type="button"
+          className={styles.primaryBtn}
+          onClick={() => navigate("/import")}
+        >
+          Sign Up Free
+        </button>
       </section>
     </div>
   );

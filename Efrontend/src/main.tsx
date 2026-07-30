@@ -5,8 +5,6 @@ import AppRoutes from './AppRoutes';
 import './index.css';
 import { ClerkProvider } from '@clerk/clerk-react';
 
-import { ThemeProviderCustom } from './hooks/useTheme';
-
 import { ThemeProvider } from './hooks/ThemeProvider';
 
 

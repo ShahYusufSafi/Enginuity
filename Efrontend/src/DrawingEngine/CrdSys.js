@@ -1,4 +1,6 @@
 // src/core/CoordinateSystem.js - Enhanced
+import * as THREE from 'three';
+
 class CoordinateSystem {
     constructor() {
         this.units = 'mm';

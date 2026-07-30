@@ -1,14 +1,26 @@
+/* Styles for the deprecated three.js CAD prototype (pages/DrawingPage.tsx).
+ *
+ * Cleanup note (2026-07): these rules used to be global — a bare
+ * `* { margin: 0; padding: 0; box-sizing: border-box }` plus a `body` rule
+ * setting `overflow: hidden` and a dark background. Because this is a SPA,
+ * importing this file anywhere applied those rules to *every* page for the
+ * rest of the session: visiting /DrawPage and navigating away left the whole
+ * app with a hidden scrollbar and a #1e1e1e body. They are now scoped to
+ * `.drawingPage`, so the prototype can only restyle itself. */
 
-* { margin: 0; padding: 0; box-sizing: border-box; }
-body { 
+.drawingPage * { margin: 0; padding: 0; box-sizing: border-box; }
+
+.drawingPage {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    overflow: hidden; 
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
     background: #1e1e1e;
 }
 
-#cad-container { 
-    width: 100vw; 
-    height: 100vh; 
+.drawingPage #cad-container {
+    width: 100%;
+    height: 100%;
 }
 
 #toolbar {

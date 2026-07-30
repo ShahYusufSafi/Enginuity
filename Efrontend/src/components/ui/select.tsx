@@ -1,3 +1,8 @@
+/**
+ * @deprecated Unused shadcn/ui primitive — nothing in the app imports it, and
+ * every <select> currently rendered is a plain native one. Deleting it also
+ * lets `@radix-ui/react-select` come out of package.json.
+ */
 import * as React from "react"
 import * as SelectPrimitive from "@radix-ui/react-select"
 import { CheckIcon, ChevronDownIcon, ChevronUpIcon } from "lucide-react"
