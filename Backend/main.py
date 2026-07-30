@@ -1,98 +1,126 @@
-# backend/main.py
+"""Enginuity backend API.
 
-from pydantic import BaseModel
+Endpoints (JSON, all speaking the canonical model — see core/):
+- POST /api/import/dxf         DXF file -> DrawingModel + ImportReport
+- POST /api/simulate/poisson1d Poisson1DModel -> result + manifest + selection
+- GET  /api/schema             JSON Schemas of the canonical models
+- GET  /check                  liveness
 
-import os
-import io
-import uuid
-import shutil
-import base64
-import numpy as np
-import matplotlib.pyplot as plt
-from scipy.sparse.linalg import spsolve
-from fastapi import FastAPI, UploadFile
+House rules:
+- Solvers return numbers; the frontend draws (no matplotlib here).
+- Every solve carries a provenance manifest (§3.2) and a selection record
+  saying which tier ran and how accurate it claims to be (§3.0).
+- File formats are parsed at this boundary only. Nothing DXF-shaped goes deeper.
+"""
+
+from __future__ import annotations
+
+from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
-from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel, Field
 
-from FEM import FEM_element_based
-from models import SimulationRequest  # keep this, remove duplicate definition
+from core.methods import Budget, SelectionRecord
+from core.model import (
+    SCHEMA_VERSION,
+    DrawingModel,
+    Poisson1DModel,
+    Poisson1DResult,
+)
+from core.provenance import RunManifest
+from FEM.ladder import solve as solve_ladder
+from ingest.dxf_importer import DxfImporter, ImportReport
 
-class SimulationRequest(BaseModel):
-    domain: list[float|int] 
-    num_elements: int 
-    bc: list[float|int] 
+MAX_UPLOAD_BYTES = 20 * 1024 * 1024  # 20 MB is generous for 2D DXF
 
-app = FastAPI()
+app = FastAPI(title="Enginuity API", version=SCHEMA_VERSION)
 
-bind_to = {
-    'hostname': "0.0.0.0",
-    'port': 8000
-    
-    
-    }
-
-# Allow frontend to access backend (CORS)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:5173", # Frontend dev server
-        "http://frontend:5173",  # Frontend container
-        "http://127.0.0.1:5173"  # Alternative localhost
-        ],
+        "http://localhost:5173",  # frontend dev server
+        "http://frontend:5173",   # frontend container
+        "http://127.0.0.1:5173",
+    ],
     allow_methods=["*"],
-    allow_headers=["*"]
+    allow_headers=["*"],
 )
 
 
+# ---------------------------------------------------------------------------
+# Response envelopes
+# ---------------------------------------------------------------------------
 
-@app.post("/simulate")
-async def simulate_poisson(input: SimulationRequest):
-    x = np.linspace(input.domain[0], input.domain[1], input.num_elements)
-    u = np.zeros(input.num_elements)
-    K,h  = FEM_element_based(input.domain[1] - input.domain[0], input.num_elements)
-    b = np.sin(np.pi * x[1:-1]) 
-    # Boundary conditions (Dirichlet: fixed ends)
-    u[0] = input.bc[0]    # Left end (u = 0)
-    u[-1] = input.bc[1]   # Right end (u = 1)
-
-    f_vals = np.sin(np.pi * x[1:-1])
-    b = f_vals * h  # basic scaling
-    # Add boundary contributions
-    b[0] += (1/h) * u[0] 
-    b[-1] += (1/h) * u[-1]
-
-    
-    # Solve the linear system: K u_interior = b
-    u_interior = spsolve(K, b)
-
-    # Insert interior solution into u
-    u[1:-1] = u_interior
-    # Plot to buffer
-    fig, ax = plt.subplots()
-    ax.plot(x, u, 'b-', linewidth=2, label='Steady-State Solution')
-    ax.set_title("FEM Solution")
-    buf = io.BytesIO()
-    plt.savefig(buf, format='png')
-    buf.seek(0)
-    
-    # Convert image to base64
-    img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+class ImportResponse(BaseModel):
+    model: DrawingModel
+    report: ImportReport
 
 
+class SimulateRequest(BaseModel):
+    """A problem, plus optionally how accurate the answer has to be.
+
+    Leave `tolerance` unset and you get one solve with no error estimate — the
+    cheap path. Set it and the ladder will spend what it takes to bound the
+    error, or tell you it couldn't inside `budget` (§3.0).
+    """
+
+    model: Poisson1DModel
+    tolerance: float | None = Field(default=None, gt=0.0, le=1.0)
+    budget: Budget | None = None
+
+
+class SimulateResponse(BaseModel):
+    result: Poisson1DResult
+    manifest: RunManifest
+    selection: SelectionRecord
+
+
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+@app.post("/api/import/dxf", response_model=ImportResponse)
+async def import_dxf(file: UploadFile) -> ImportResponse:
+    if file.filename and not file.filename.lower().endswith(".dxf"):
+        raise HTTPException(
+            status_code=422,
+            detail="Only .dxf files are accepted here. Convert DWG to DXF first "
+            "(the converter service does this at the edge).",
+        )
+    data = await file.read()
+    if len(data) > MAX_UPLOAD_BYTES:
+        raise HTTPException(status_code=413, detail="File exceeds 20 MB limit.")
+    if not data:
+        raise HTTPException(status_code=422, detail="Empty file.")
+
+    try:
+        model, report = DxfImporter().import_bytes(data, filename=file.filename)
+    except Exception as exc:  # ezdxf raises many specific types; surface cleanly
+        raise HTTPException(status_code=422, detail=f"Could not parse DXF: {exc}") from exc
+
+    return ImportResponse(model=model, report=report)
+
+
+@app.post("/api/simulate/poisson1d", response_model=SimulateResponse)
+async def simulate_poisson1d(request: SimulateRequest) -> SimulateResponse:
+    result, manifest, selection = solve_ladder(
+        request.model, tolerance=request.tolerance, budget=request.budget
+    )
+    return SimulateResponse(result=result, manifest=manifest, selection=selection)
+
+
+@app.get("/api/schema")
+def schemas() -> dict:
+    """The canonical model schemas, published. An open model is the product."""
     return {
-        "message": "Simulation complete!",
-        "data": {
-                "x": x.tolist(),
-                "u": u.tolist()
-                }, 
-        "plot": img_base64
+        "schema_version": SCHEMA_VERSION,
+        "drawing": DrawingModel.model_json_schema(),
+        "poisson1d": Poisson1DModel.model_json_schema(),
+        "poisson1d_result": Poisson1DResult.model_json_schema(),
+        "simulate_request": SimulateRequest.model_json_schema(),
+        "selection": SelectionRecord.model_json_schema(),
     }
 
 
-
-
-
 @app.get("/check")
-def check():
+def check() -> str:
     return "Backend!!"

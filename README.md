@@ -1,117 +1,94 @@
-# Enginuity Cloud Solver
+<div align="center">
 
-**Enginuity** is a cloud-based engineering platform designed to bring CAD, simulation, and computational solvers together — **no external software required**.  
-Upload your CAD file, visualize it, and run solvers directly in the browser.
+# Enginuity
 
----
+**Upload an engineering drawing. Get calculations you can check.**
 
-## Features
+Browser-based engineering platform: CAD intake, simulation and solvers in one place, no software to install.
 
-✅ **User Authentication** – Secure sign-in using Clerk services.  
-✅ **Dashboard** – Upload your CAD files and visualize them as SVGs.  
-✅ **1D FEM Solver (Demo)** – Proof-of-concept solver that demonstrates working finite element analysis.  
-✅ **Theme Switching** – Toggle between light and dark themes.  
-✅ **Drawing Page** – Draw and measure geometry interactively (prototype).  
-✅ **Simulation Page** – Placeholder for advanced computational solvers (FEM / PINN).  
+</div>
 
 ---
 
-## Tech Stack
+## What it does today
 
-| Layer      | Technology |
-|-------------|-------------|
-| Frontend | React (Vite) + TypeScript + TailwindCSS |
-| Backend | FastAPI (Python) |
-| Conversion | ODAFileConverter.AppImage (running inside container) |
-| Containerization | Docker + Docker Compose |
-| Authentication | Clerk |
-| Future Solvers | FEM, PINN, Statistical Solvers |
+Enginuity is early. Here is what actually works, not what is planned.
 
+**Import a drawing → get real geometry.** Upload a DXF or DWG and it becomes interactive, measurable geometry: pan, zoom, layer visibility, click any entity to select it, snap to endpoints and centres to measure distances in the drawing's own units. Not a picture of a drawing — the geometry itself, with every entity traceable back to its handle in the source file.
 
----
+**Run a solver, see how it was solved.** The 1D FEM solver (Poisson / steady heat-flow form) takes a domain, boundary conditions, conductivity and a load, and returns the solution plotted in the browser.
 
-##  Getting Started
+**Every result shows its own accuracy.** Enginuity solves exactly when the problem has a closed-form solution, and numerically when it doesn't — which is most of the time. Either way the result tells you which method answered, why, and how accurate it claims to be. Ask for a specific tolerance and the solver refines until it meets it, or tells you plainly that it couldn't.
 
-### 1️ Prerequisites
-- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
-- Git
+**Every run is reproducible.** Results carry a manifest: a hash of the exact input, the solver version, and the library versions used. Re-run it later and you can prove you got the same answer.
 
-### 2️ Clone the Repository
+## Screens
+
+| Route | What it's for |
+|---|---|
+| `/import` | Upload a DXF/DWG, inspect and measure the geometry |
+| `/simulate` | Run the 1D solver, with its accuracy and provenance |
+| `/dashboard` | Project list (legacy DWG→SVG flow) |
+
+## Quick start
+
+Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/).
+
 ```bash
 git clone https://github.com/Shahyusufsafi/Enginuity.git
-cd enginuity
-```
-3️ Build and Run
-```bash
+cd Enginuity
 docker-compose up --build
 ```
 
+Then open <http://localhost:5173> and sign in.
 
+- **To view a drawing:** go to *Import DXF*, choose a `.dxf` or `.dwg` file. Drag to pan, scroll to zoom, click entities to select, use 📏 to measure between two snap points.
+- **To run the solver:** go to *FEM Simulation*, set the domain, boundary values and load, then *Run Solver*. Tick "require an accuracy guarantee" if you want the error bounded — it costs an extra solve.
 
-That’s it! 
-You can now visit:
+## Stack
 
- → http://localhost:5173 # or follow the link provided, for the frontend 
+| Layer | Technology |
+|---|---|
+| Frontend | React + Vite + TypeScript + Tailwind |
+| Backend | FastAPI (Python), NumPy/SciPy |
+| Drawing intake | ezdxf (DXF), ODA File Converter (DWG→DXF, isolated in its own service) |
+| Auth | Clerk |
+| Containers | Docker Compose |
 
+## For developers
 
-Usage Guide
-1. Convert a DWG File to SVG
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) — how the pieces fit and why: the canonical model, the method ladder, provenance, validation.
+- Each service has its own README: [`Backend/`](Backend/README.md), [`converter/`](converter/README.md).
+- Tests: `cd Backend && pip install -r requirements-dev.txt && python -m pytest`
 
-Open the Dashboard (accessible via the user menu or navigation bar).
+The validation suite runs in CI on every push. It checks solvers against closed-form solutions, enforces the theoretical convergence rate, and verifies that error estimates are honest rather than merely small.
 
-Click Create New.
+## Status and limitations
 
-Upload a DWG file (e.g., sample.dwg).
+Being upfront about the edges:
 
-The backend automatically converts it — the resulting SVG file appears on the new page and is stored under /SVGs/sample.svg.
+- The solver covers 1D problems. 2D section properties and frame analysis are next.
+- Polyline arc segments (bulges) import as straight lines, with a warning shown on import.
+- TEXT, dimensions, hatches and blocks are not imported yet; the import report counts everything skipped.
+- No persistent project storage yet — work is per-session.
+- Design-code checks (Eurocode, AREMA and similar) are planned, not built.
 
-The frontend then renders the SVG automatically.
+## Roadmap
 
-2. Run the FEM Solver Demo
+1. **Section properties from a drawing** — extract a closed region from an imported profile, mesh it, compute area/centroid/second moments/torsion, and produce a traceable report.
+2. **2D frame analysis** with design-code member checks, each check printing the clause it came from.
+3. **Wider physics** on the same spine: plane stress, steady heat.
 
-Navigate to FEM Simulation from the navigation bar.
+Not planned: a general CAD editor, or a general-purpose cloud simulation platform. Machine-learned surrogates are reserved for cases where the real solver is too slow, and only ever gauged against it.
 
-Adjust the simulation parameters — the current version supports 1D systems, with 2D simulations coming in future updates.
+## Author
 
-The solver demonstrates the project’s computational core, which integrates FEM-based PDE solvers with drawing and visualization modules.
+**Shah Yusuf Safi** — MSc Computational Science.
 
-The internal production rate of the system currently follows a sine function for demonstration purposes.
+📧 yusufsafi277@gmail.com · 🔗 [LinkedIn](http://linkedin.com/in/shah-yusuf-safi-6444472b7)
 
-3. Drawer Page
+## License
 
-Go to Draw from the navigation bar.
+MIT.
 
-You can draw points, connect them, and measure distances between them.
-
-Future updates will enable direct integration with DWG files, allowing in-browser editing and CAD-level modifications.
-
----
-
-Future Directions
-
- Implement higher-dimensional FEM solvers.
-
- Add Physics-Informed Neural Networks (PINNs).
-
- Enable in-browser CAD editing (three.js integration).
-
- Deploy to the cloud (AWS / Render / Railway).
-
- Add persistent storage for user projects.
- ---
-
- About the Author
-
-Shah Yusuf Safi,
-MSc. Computational Science — Building the bridge between engineering, computation, and simulation.
-
-📧 [yusufsafi277@gmail.com]
-
-🔗 LinkedIn Profile: http://linkedin.com/in/shah-yusuf-safi-6444472b7
-
-License
-
-This project is licensed under the MIT License
-.
-
-If you like this project, don’t forget to star the repo!
+If this is useful to you, a star on the repo is appreciated.

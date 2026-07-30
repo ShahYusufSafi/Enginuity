@@ -1,5 +1,9 @@
-from pydantic import BaseModel
+"""DEPRECATED — replaced by the canonical model in Backend/core/model.py.
 
-class SimulationRequest(BaseModel):
-    domain: list[float | int]
-    num_elements: int
+`SimulationRequest` (domain/num_elements/bc) was the ad-hoc request body of
+the old /simulate endpoint. The canonical `Poisson1DModel` supersedes it:
+schema-versioned, hashable, with declarative forcing. This shim remains only
+so stale imports fail loudly with a pointer instead of silently drifting.
+"""
+
+from core.model import Poisson1DModel as SimulationRequest  # noqa: F401

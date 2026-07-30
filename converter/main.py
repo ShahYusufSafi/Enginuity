@@ -58,6 +58,41 @@ async def converter(file: UploadFile):
     # temp_file automatically deleted when 'with' block exits
 
 
+@app.post('/upload-dwg-to-dxf')
+async def dwg_to_dxf_endpoint(file: UploadFile):
+    """Edge adapter: DWG in, DXF text out.
+
+    This is the converter's strategic role (see docs/ARCHITECTURE.md §3.4):
+    proprietary DWG is converted to open DXF here at the edge, and everything
+    downstream (backend /api/import/dxf) speaks DXF only. Swapping ODA for
+    another converter later touches this service alone.
+    """
+    from fastapi import Response
+    from Converter import find_odafc, odafc_convert
+
+    odafc = find_odafc()
+    if not odafc:
+        return {"error": "ODAFileConverter not found in converter container."}
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        tmp_dwg = Path(tmpdir) / "upload.dwg"
+        tmp_dxf = Path(tmpdir) / "upload.dxf"
+        with open(tmp_dwg, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+        try:
+            odafc_convert(odafc, tmp_dwg, tmp_dxf)
+        except Exception as exc:
+            logger.exception("DWG->DXF conversion failed")
+            return {"error": f"Conversion failed: {exc}"}
+        dxf_bytes = tmp_dxf.read_bytes()
+
+    return Response(
+        content=dxf_bytes,
+        media_type="application/dxf",
+        headers={"Content-Disposition": 'attachment; filename="converted.dxf"'},
+    )
+
+
 @app.get("/test")
 def get():
     return "Converter"
