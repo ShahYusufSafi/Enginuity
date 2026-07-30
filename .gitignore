@@ -1,7 +1,8 @@
 #python
 .venv/
 __pycache__/
-*.pyc 
+*.pyc
+.pytest_cache/
 
 # Node.js
 node_modules/
@@ -26,3 +27,10 @@ Thumbs.db
 frontendCRA/
 Documentation/
 Efrontend/src/DrawingEngine/docs.md
+
+# Private notes: strategy, build logs, working drafts.
+# Not secret, just not for the public repo. Delete this line to version them.
+docs/internal/
+
+# Converter output. Regenerated on every upload; nothing here is source.
+SVGs/

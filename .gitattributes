@@ -1,0 +1,22 @@
+# Normalize line endings.
+#
+# The repo was committed with LF. Editing on Windows rewrites files with CRLF,
+# which makes git report every line of a touched file as changed — 57 files
+# showed up as "modified" with no content change at all.
+#
+# `text=auto eol=lf` stores LF in the repo and checks out LF, so the working
+# tree matches what the Linux containers and CI actually run.
+* text=auto eol=lf
+
+# Binary: never touch these.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.dwg binary
+*.AppImage binary
+
+# Generated; collapse in diffs and reviews.
+package-lock.json linguist-generated=true -diff
