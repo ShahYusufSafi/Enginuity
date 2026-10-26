@@ -4,7 +4,9 @@ Converts proprietary DWG to open DXF. That's the whole job. Everything downstrea
 
 ## Why it's a separate service
 
-It wraps **ODA File Converter** — an AppImage run under xvfb. ODA's free tooling is licensed for end-user use; embedding it in a commercial service needs paid membership (verify current terms before any commercial launch). Keeping it behind an HTTP boundary means swapping it for something else touches this service and nothing else.
+It wraps **ODA File Converter** — an AppImage run under xvfb. ODA's free tooling is licensed for end-user use; embedding it in a commercial service needs paid membership (verify current terms before any commercial launch).
+
+**The binary is not in this repo.** Download the Linux AppImage from [opendesign.com](https://www.opendesign.com/guestfiles/oda_file_converter) and save it as `converter/ODAFileConverter.AppImage` (the path is gitignored). Without it the service still starts; DWG requests fail and `GET /debug-odafc` reports the binary as missing. Keeping it behind an HTTP boundary means swapping it for something else touches this service and nothing else.
 
 ## Endpoints
 

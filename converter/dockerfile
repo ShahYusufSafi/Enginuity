@@ -24,4 +24,4 @@ EXPOSE 8001
 
 # for my converter I need a virual window for GUI to run (xvfb-run)
 #CMD ["xvfb","run","uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8001"]
-CMD bash -c "chmod +x /converter/ODAFileConverter.AppImage && xvfb-run -a uvicorn main:app --host 0.0.0.0 --port 8001"
+CMD bash -c "chmod +x /converter/ODAFileConverter.AppImage 2>/dev/null || echo 'WARNING: converter/ODAFileConverter.AppImage not found; DWG import disabled (see converter/README.md)'; xvfb-run -a uvicorn main:app --host 0.0.0.0 --port 8001"

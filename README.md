@@ -6,7 +6,16 @@
 
 Browser-based engineering platform: CAD intake, simulation and solvers in one place, no software to install.
 
+[![validate](https://github.com/ShahYusufSafi/Enginuity/actions/workflows/validate.yml/badge.svg)](https://github.com/ShahYusufSafi/Enginuity/actions/workflows/validate.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 </div>
+
+<!--
+  Screenshot goes here: a DWG imported and measured, or a solver run with its method badge.
+  Save it as docs/screenshot.png and replace this comment with:
+  <p align="center"><img src="docs/screenshot.png" alt="Enginuity: imported drawing and solver result" width="800"></p>
+-->
 
 ---
 
@@ -35,12 +44,16 @@ Enginuity is early. Here is what actually works, not what is planned.
 Requires [Docker Desktop](https://www.docker.com/products/docker-desktop/).
 
 ```bash
-git clone https://github.com/Shahyusufsafi/Enginuity.git
+git clone https://github.com/ShahYusufSafi/Enginuity.git
 cd Enginuity
 docker-compose up --build
 ```
 
 Then open <http://localhost:5173> and sign in.
+
+DXF import works out of the box. **DWG import** needs the free [ODA File Converter](https://www.opendesign.com/guestfiles/oda_file_converter), which is not shipped with this repo: download the Linux AppImage and save it as `converter/ODAFileConverter.AppImage` before building. See [`converter/README.md`](converter/README.md).
+
+A sample drawing to try is in [`examples/Truss.dwg`](examples/Truss.dwg).
 
 - **To view a drawing:** go to *Import DXF*, choose a `.dxf` or `.dwg` file. Drag to pan, scroll to zoom, click entities to select, use 📏 to measure between two snap points.
 - **To run the solver:** go to *FEM Simulation*, set the domain, boundary values and load, then *Run Solver*. Tick "require an accuracy guarantee" if you want the error bounded — it costs an extra solve.
@@ -89,6 +102,6 @@ Not planned: a general CAD editor, or a general-purpose cloud simulation platfor
 
 ## License
 
-MIT.
+MIT, see [LICENSE](LICENSE).
 
 If this is useful to you, a star on the repo is appreciated.
