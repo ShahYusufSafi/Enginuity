@@ -13,7 +13,7 @@ npm-debug.log*
 .env.local
 env/
 converter/wsl_venv/
-Backend\venv/
+Backend/venv/
 
 #IDE
 .vscode
@@ -33,4 +33,13 @@ Efrontend/src/DrawingEngine/docs.md
 docs/internal/
 
 # Converter output. Regenerated on every upload; nothing here is source.
-SVGs/
+# The folder itself stays (converter/main.py mounts it), via .gitkeep.
+SVGs/*
+!SVGs/.gitkeep
+
+# Uploaded drawings. Runtime data, not source; samples live in examples/.
+uploads/
+
+# ODA File Converter binary. Proprietary, downloaded by each user
+# (see converter/README.md), never redistributed from this repo.
+converter/ODAFileConverter.AppImage
